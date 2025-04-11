@@ -1,0 +1,58 @@
+[tool.ruff]
+line-length = 120
+target-version = "py313" 
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".history",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "migrations",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]  # Включаем правила для импортов (Ixxx)
+extend-select = [
+    "I001",  # https://docs.astral.sh/ruff/rules/#isort-i
+    "TID251",  # https://docs.astral.sh/ruff/rules/#flake8-tidy-imports-tid
+    "ICN",  # https://docs.astral.sh/ruff/rules/#flake8-import-conventions-icn
+    "UP",  # https://docs.astral.sh/ruff/rules/#pyupgrade-up
+    "N",  # https://docs.astral.sh/ruff/rules/#pep8-naming-n
+]
+ignore = [
+    "UP007",  # non-pep604-annotation
+    "N818",  # error-suffix-on-exception-name
+]
+
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/*" = ["E501", "F401"]  
+"settings.py" = ["E501"] 
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
