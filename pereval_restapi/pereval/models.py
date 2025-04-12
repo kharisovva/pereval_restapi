@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class User(models.Model):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=100)
@@ -17,7 +18,7 @@ class User(models.Model):
 
 class Area(models.Model):
     title = models.CharField(max_length=255)
-    parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -29,10 +30,10 @@ class Area(models.Model):
 
 class Pereval(models.Model):
     STATUS_CHOICES = [
-        ('new', 'Новый'),
-        ('pending', 'На модерации'),
-        ('accepted', 'Принят'),
-        ('rejected', 'Отклонён'),
+        ("new", "Новый"),
+        ("pending", "На модерации"),
+        ("accepted", "Принят"),
+        ("rejected", "Отклонён"),
     ]
 
     beauty_title = models.CharField(max_length=50, blank=True, null=True)
@@ -45,20 +46,15 @@ class Pereval(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     height = models.IntegerField()
     date_added = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
 
     def __str__(self):
         return f"{self.beauty_title or ''} {self.title}"
-    
+
     class Meta:
         verbose_name = "Перевал"
         verbose_name_plural = "Перевалы"
-        constraints = [
-            models.UniqueConstraint(
-                fields=['title', 'latitude', 'longitude'],
-                name='unique_pereval'
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=["title", "latitude", "longitude"], name="unique_pereval")]
 
 
 class Level(models.Model):
@@ -77,7 +73,7 @@ class Level(models.Model):
 
 
 class Image(models.Model):
-    pereval = models.ForeignKey(Pereval, on_delete=models.CASCADE, related_name='images')
+    pereval = models.ForeignKey(Pereval, on_delete=models.CASCADE, related_name="images")
     title = models.CharField(max_length=255, blank=True, null=True)
     image_path = models.CharField(max_length=512)
     date_added = models.DateTimeField(auto_now_add=True)
@@ -99,5 +95,3 @@ class ActivityType(models.Model):
     class Meta:
         verbose_name = "Тип активности"
         verbose_name_plural = "Типы активности"
-    
-
