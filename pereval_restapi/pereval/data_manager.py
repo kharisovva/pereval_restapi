@@ -13,19 +13,21 @@ class PerevalDataManager:
         :return: объект User
         """
         email = user_data.get("email")
-        try:
-            user, created = User.objects.get_or_create(
+        if not email:
+            raise ValueError("Email обязателен")
+        user = User.objects.filter(email=email).first()
+        if user:
+            return user
+
+        else:
+            user = User.objects.create(
                 email=email,
-                defaults={
-                    "first_name": user_data.get("first_name", ""),
-                    "last_name": user_data.get("last_name", ""),
-                    "patronymic": user_data.get("patronymic"),
-                    "phone": user_data.get("phone"),
-                },
+                first_name=user_data.get("first_name", ""),
+                last_name=user_data.get("last_name", ""),
+                patronymic=user_data.get("patronymic"),
+                phone=user_data.get("phone"),
             )
             return user
-        except IntegrityError:
-            raise ValueError(f"Ошибка при создании пользователя с email {email}")
 
     def create_area(self, area_data):
         """
@@ -95,28 +97,31 @@ class PerevalDataManager:
         except IntegrityError:
             raise ValueError(f"Уровень сложности для перевала {pereval.id} уже существует")
 
-    def create_images(self, pereval, images_data):
+    def create_images(self, pereval, images_data, image_files):
         """
         Создает изображения для перевала.
         :param pereval: объект Pereval
-        :param images_data: список dict с полями title, image_path
+        :param images_data: список dict с полем title
+        :param image_files: список файлов
         :return: список объектов Image
         """
+        if len(images_data) != len(image_files):
+            raise ValueError("Количество заголовков изображений не совпадает с количеством файлов")
+
         images = []
-        for image_data in images_data:
+        for image_data, image_file in zip(images_data, image_files):
             try:
-                image = Image.objects.create(
-                    pereval=pereval, title=image_data.get("title"), image_path=image_data["image_path"]
-                )
+                image = Image.objects.create(pereval=pereval, title=image_data.get("title"), image=image_file)
                 images.append(image)
-            except IntegrityError:
-                raise ValueError(f"Ошибка при создании изображения {image_data.get('title')}")
+            except Exception as e:
+                raise ValueError(f"Ошибка при создании изображения: {str(e)}")
         return images
 
-    def submit_data(self, data):
+    def submit_data(self, data, image_files=None):
         """
         Основной метод для добавления полного набора данных о перевале.
-        :param data: dict с полями user, area, pereval, level, images
+        :param data: dict с полями user, area, pereval
+        :param images_data: список dict с полями title, image (файл)
         :return: объект Pereval
         """
         user = self.create_user(data["user"])
@@ -124,7 +129,7 @@ class PerevalDataManager:
         pereval = self.create_pereval(data["pereval"], user, area)
         self.create_level(pereval, data["pereval"]["level"])
 
-        if data.get("images"):
-            self.create_images(pereval, data["images"])
+        if image_files and data.get("pereval", {}).get("images"):
+            self.create_images(pereval, data["pereval"]["images"], image_files)
 
         return pereval

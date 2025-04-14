@@ -1,17 +1,27 @@
 from rest_framework import serializers
 
-from .models import Area, Image, Level, User
+from .models import Area, Level, User
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["email", "first_name", "last_name", "patronymic", "phone"]
+        extra_kwargs = {
+            "email": {"validators": []},
+        }
 
     def validate(self, data):
         if not data.get("email") or not data.get("first_name") or not data.get("last_name"):
             raise serializers.ValidationError("Поля email, first_name, last_name обязательны")
         return data
+
+    def create(self, validated_data):
+        email = validated_data.get("email")
+        user = User.objects.filter(email=email).first()
+        if user:
+            return user
+        return User.objects.create(**validated_data)
 
 
 class AreaSerializer(serializers.ModelSerializer):
@@ -33,15 +43,8 @@ class LevelSerializer(serializers.ModelSerializer):
         fields = ["winter", "summer", "autumn", "spring"]
 
 
-class ImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Image
-        fields = ["title", "image_path"]
-
-    def validate(self, data):
-        if not data.get("image_path"):
-            raise serializers.ValidationError("Поле image_path обязательно")
-        return data
+class ImageDataSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=255, required=False, allow_blank=True)
 
 
 class CoordsSerializer(serializers.Serializer):
@@ -66,7 +69,7 @@ class PerevalSerializer(serializers.Serializer):
     connect = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     coords = CoordsSerializer()
     level = LevelSerializer()
-    images = ImageSerializer(many=True, required=False)
+    images = ImageDataSerializer(many=True, required=False)
 
     def validate(self, data):
         if not data["title"].strip():
@@ -78,4 +81,3 @@ class SubmitDataSerializer(serializers.Serializer):
     user = UserSerializer()
     area = AreaSerializer()
     pereval = PerevalSerializer()
-    images = ImageSerializer(many=True, required=False)

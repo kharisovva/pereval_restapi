@@ -75,7 +75,7 @@ class Level(models.Model):
 class Image(models.Model):
     pereval = models.ForeignKey(Pereval, on_delete=models.CASCADE, related_name="images")
     title = models.CharField(max_length=255, blank=True, null=True)
-    image_path = models.CharField(max_length=512)
+    image = models.ImageField(upload_to="images/%Y/%m/%d/")
     date_added = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
