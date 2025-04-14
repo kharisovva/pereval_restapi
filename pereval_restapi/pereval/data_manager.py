@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 
-from .models import Area, Image, Level, Pereval, User
+from pereval.models import Area, Image, Level, Pereval, User
 
 
 class PerevalDataManager:
