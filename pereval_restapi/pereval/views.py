@@ -7,11 +7,27 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from pereval.data_manager import PerevalDataManager
-from pereval.serializers import SubmitDataSerializer
+from pereval.serializers import PerevalDetailSerializer, SubmitDataSerializer
+from pereval.models import Pereval
 
 
 class SubmitDataView(APIView):
     parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request, id=None):
+        try:
+            pereval = Pereval.objects.get(id=id)
+            serializer = PerevalDetailSerializer(pereval, context={"request": request})
+            return Response(serializer.data, status=http_status.HTTP_200_OK)
+        except Pereval.DoesNotExist:
+            return Response(
+                {"status": 404, "message": "Перевал не найден", "id": None}, status=http_status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"status": 500, "message": f"Ошибка сервера: {str(e)}", "id": None},
+                status=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     def post(self, request):
         try:
