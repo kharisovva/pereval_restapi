@@ -71,7 +71,7 @@ class SubmitDataView(APIView):
 
             manager = PerevalDataManager()
             pereval = manager.submit_data(serializer.validated_data, image_files)
-            return Response({"status": 200, "message": None, "id": pereval.id}, status=http_status.HTTP_200_OK)
+            return Response({"status": 200, "message": "", "id": pereval.id}, status=http_status.HTTP_200_OK)
 
         except json.JSONDecodeError:
             return Response(

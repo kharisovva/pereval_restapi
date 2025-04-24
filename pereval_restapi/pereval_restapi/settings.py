@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -68,6 +69,11 @@ DATABASES = {
     }
 }
 
+if "test" in sys.argv or "pytest" in sys.modules:
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
