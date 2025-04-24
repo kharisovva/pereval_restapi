@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from pereval.data_manager import PerevalDataManager
-from pereval.serializers import PerevalDetailSerializer, SubmitDataSerializer
 from pereval.models import Pereval
+from pereval.serializers import PerevalDetailSerializer, SubmitDataSerializer
 
 
 class SubmitDataView(APIView):
@@ -67,3 +67,48 @@ class SubmitDataView(APIView):
             )
         except ValueError as e:
             return Response({"status": 400, "message": str(e), "id": None}, status=http_status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, id=None):
+        try:
+            data = json.loads(request.data.get("data", "{}"))
+            serializer = SubmitDataSerializer(data=data)
+            if not serializer.is_valid():
+                return Response({"state": 0, "message": serializer.errors}, status=http_status.HTTP_400_BAD_REQUEST)
+
+            image_files = request.FILES.getlist("images", [])
+            images_data = serializer.validated_data.get("pereval", {}).get("images", [])
+
+            if images_data and not image_files:
+                return Response(
+                    {"state": 0, "message": "Файлы изображений не переданы"}, status=http_status.HTTP_400_BAD_REQUEST
+                )
+
+            if images_data and len(image_files) != len(images_data):
+                return Response(
+                    {"state": 0, "message": "Количество загруженных файлов не совпадает с количеством заголовков"},
+                    status=http_status.HTTP_400_BAD_REQUEST,
+                )
+
+            Pereval.objects.get(id=id)
+
+            manager = PerevalDataManager()
+            area = manager.create_area(serializer.validated_data["area"])
+
+            manager.update_pereval(
+                pereval_id=id, pereval_data=serializer.validated_data["pereval"], area=area, image_files=image_files
+            )
+            return Response({"state": 1, "message": ""}, status=http_status.HTTP_200_OK)
+
+        except Pereval.DoesNotExist:
+            return Response({"state": 0, "message": "Перевал не найден"}, status=http_status.HTTP_404_NOT_FOUND)
+        except json.JSONDecodeError:
+            return Response(
+                {"state": 0, "message": "Некорректный формат JSON в поле data"}, status=http_status.HTTP_400_BAD_REQUEST
+            )
+        except ValueError as e:
+            return Response({"state": 0, "message": str(e)}, status=http_status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {"state": 0, "message": f"Неизвестная ошибка: {str(e)}"},
+                status=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

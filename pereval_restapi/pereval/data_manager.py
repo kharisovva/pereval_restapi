@@ -133,3 +133,48 @@ class PerevalDataManager:
             self.create_images(pereval, data["pereval"]["images"], image_files)
 
         return pereval
+
+    def update_pereval(self, pereval_id, pereval_data, area, image_files=None):
+        """
+        Обновляет существующий перевал, если его статус 'new'.
+        :param pereval_id: ID перевала
+        :param pereval_data: dict с полями beauty_title, title, other_titles, connect,
+                            coords (latitude, longitude, height), level (winter, summer, autumn, spring), images
+        :param area: объект Area
+        :param image_files: список файлов изображений
+        :return: объект Pereval
+        """
+        try:
+            pereval = Pereval.objects.get(id=pereval_id)
+            if pereval.status != "new":
+                raise ValueError("Редактирование возможно только для статуса 'new'")
+
+            pereval.beauty_title = pereval_data.get("beauty_title")
+            pereval.title = pereval_data["title"]
+            pereval.other_titles = pereval_data.get("other_titles")
+            pereval.connect = pereval_data.get("connect")
+            pereval.area = area
+            pereval.latitude = pereval_data["coords"]["latitude"]
+            pereval.longitude = pereval_data["coords"]["longitude"]
+            pereval.height = pereval_data["coords"]["height"]
+            pereval.save()
+
+            level = pereval.level
+            level.winter = pereval_data["level"].get("winter")
+            level.summer = pereval_data["level"].get("summer")
+            level.autumn = pereval_data["level"].get("autumn")
+            level.spring = pereval_data["level"].get("spring")
+            level.save()
+
+            if image_files and pereval_data.get("images"):
+                pereval.images.all().delete()
+                self.create_images(pereval, pereval_data["images"], image_files)
+
+            return pereval
+
+        except Pereval.DoesNotExist:
+            raise ValueError("Перевал не найден")
+        except IntegrityError:
+            raise ValueError("Ошибка: некорректные данные перевала")
+        except Exception as e:
+            raise ValueError(f"Ошибка: {str(e)}")
