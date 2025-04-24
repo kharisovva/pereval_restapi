@@ -15,18 +15,36 @@ class SubmitDataView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request, id=None):
+        # Обработка GET /submitData/<id>/
+        if id is not None:
+            try:
+                pereval = Pereval.objects.get(id=id)
+                serializer = PerevalDetailSerializer(pereval, context={"request": request})
+                return Response(serializer.data, status=http_status.HTTP_200_OK)
+
+            except Pereval.DoesNotExist:
+                return Response(
+                    {"status": 404, "message": "Перевал не найден", "id": None}, status=http_status.HTTP_404_NOT_FOUND
+                )
+            except Exception as e:
+                return Response(
+                    {"status": 500, "message": f"Ошибка сервера: {str(e)}", "id": None},
+                    status=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+        # Обработка GET /submitData/?user__email=<email>
+        email = request.query_params.get("user__email")
+        if not email:
+            return Response({"state": 0, "message": "Email обязателен"}, status=http_status.HTTP_400_BAD_REQUEST)
+
         try:
-            pereval = Pereval.objects.get(id=id)
-            serializer = PerevalDetailSerializer(pereval, context={"request": request})
+            perevals = Pereval.objects.filter(user__email=email)
+            serializer = PerevalDetailSerializer(perevals, many=True, context={"request": request})
             return Response(serializer.data, status=http_status.HTTP_200_OK)
-        except Pereval.DoesNotExist:
-            return Response(
-                {"status": 404, "message": "Перевал не найден", "id": None}, status=http_status.HTTP_404_NOT_FOUND
-            )
         except Exception as e:
+            print(f"Ошибка при получении списка перевалов: {str(e)}")
             return Response(
-                {"status": 500, "message": f"Ошибка сервера: {str(e)}", "id": None},
-                status=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+                {"state": 0, "message": f"Ошибка сервера: {str(e)}"}, status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     def post(self, request):
