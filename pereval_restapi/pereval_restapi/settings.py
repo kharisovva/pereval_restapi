@@ -14,9 +14,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
-# Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -26,6 +23,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "pereval",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -117,3 +115,5 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [],
 }
+
+SWAGGER_USE_COMPAT_RENDERERS = False

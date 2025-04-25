@@ -29,7 +29,7 @@ class TestPerevalDataManager:
         }
         user = self.data_manager.create_user(user_data)
         assert user == test_user
-        assert user.first_name == "Тест"  # Не изменилось
+        assert user.first_name == "Тест"
         assert User.objects.count() == 1
 
     @pytest.mark.django_db
