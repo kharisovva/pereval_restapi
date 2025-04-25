@@ -87,4 +87,4 @@ class TestSubmitDataAPI:
         url = reverse("submit_data")
         response = self.client.get(url)
         assert response.status_code == 400
-        assert response.json() == {"state": 0, "message": "Email обязателен"}
+        assert response.json() == {"status": 400, "message": "Email обязателен"}
