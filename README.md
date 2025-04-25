@@ -14,9 +14,9 @@
 
 ## Технологии
 
-- **Backend**: Django 5.0.2, Django REST Framework 3.15.2
+- **Backend**: Django 5.2, Django REST Framework 3.16
 - **База данных**: PostgreSQL (SQLite для тестов)
-- **Документация**: drf-yasg 1.21.7 (Swagger UI)
+- **Документация**: drf-yasg 1.21.10 (Swagger UI)
 - **Тестирование**: pytest, pytest-django, pytest-cov
 
 ## Установка
